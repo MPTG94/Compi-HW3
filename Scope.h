@@ -14,6 +14,19 @@
 extern int yylineno;
 using namespace std;
 
+void enterLoop();
+void exitLoop();
+
+void exitProgramFuncs();
+
+void exitProgramRuntime();
+
+void openNewScope();
+
+void closeCurrentScope();
+
+bool isDeclared(const string &name);
+
 // Single row in the table of a scope
 class SymbolTableRow {
 public:
@@ -78,7 +91,7 @@ public:
     Exp(TypeNode *notNode, Exp *exp);
 
     // for Exp RELOP, MUL, DIV, ADD, SUB, OR, AND Exp
-    Exp(Exp *e1, TypeNode *op, Exp *e2, string type);
+    Exp(Exp *e1, TypeNode *op, Exp *e2, const string &taggedTypeFromParser);
 
     // for Exp ID
     explicit Exp(TypeNode *id);
@@ -91,7 +104,7 @@ class ExpList : public TypeNode {
 public:
     vector<Exp> list;
 
-    ExpList(Exp *exp);
+    explicit ExpList(Exp *exp);
 
     ExpList(Exp *exp, ExpList *expList);
 };
@@ -117,7 +130,7 @@ public:
     string dataTag;
 
     // For Lbrace Statements Rbrace
-    Statement(Statement *states);
+    explicit Statement(Statement *states);
 
     // For Type ID SC
     Statement(Type *t, TypeNode *id);
@@ -129,19 +142,19 @@ public:
     Statement(TypeNode *id, Exp *exp);
 
     // For Call SC
-    Statement(Call *call);
+    explicit Statement(Call *call);
 
     // For Return SC -> this is for a function with a void return type
-    Statement(RetType *ret);
+    explicit Statement(RetType *ret);
 
     // For Return Exp SC -> This is for a non-void function, exp stores the type so it is enough
-    Statement(Exp *exp);
+    explicit Statement(Exp *exp);
 
     // For if,if/else,while
     Statement(string type, Exp *exp);
 
     // For break,continue
-    Statement(TypeNode *type);
+    explicit Statement(TypeNode *type);
 
     // For Switch LParen Exp RParen Lbrace CaseList Rbrace
     Statement(Exp *exp, CaseList *cList);
@@ -150,7 +163,7 @@ public:
 class Statements : public TypeNode {
 public:
     // For Statement
-    Statements(Statement *state);
+    explicit Statements(Statement *state);
 
     // For Statements Statement
     Statements(Statements *states, Statement *state);
@@ -164,16 +177,16 @@ public:
 
 class CaseList : public TypeNode {
 public:
-    vector<CaseDecl> cases;
+    vector<CaseDecl *> cases;
 
     // For CaseDecl CaseList
     CaseList(CaseList *cList, CaseDecl *cDec);
 
     // For CaseDecl
-    CaseList(CaseDecl *cDec);
+    explicit CaseList(CaseDecl *cDec);
 
     // For Default Colon Statements
-    CaseList(Statements *states);
+    explicit CaseList(Statements *states);
 };
 
 class FormalDecl : public TypeNode {
@@ -217,7 +230,7 @@ public:
 
 class Funcs : public TypeNode {
 public:
-    Funcs() = default;;
+    Funcs() = default;
 };
 
 class Program : public TypeNode {
