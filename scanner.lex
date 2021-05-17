@@ -3,7 +3,7 @@
 #include <stdio.h>
 #define YYSTYPE int
 #include "parser.tab.hpp"
-#include "output.hpp"
+#include "hw3_output.hpp"
 %}
 
 %option yylineno
