@@ -2,8 +2,8 @@
 // Created by 1912m on 12/05/2021.
 //
 
-#ifndef HW3_SCOPE_H
-#define HW3_SCOPE_H
+#ifndef HW3_SEMANTICS_H
+#define HW3_SEMANTICS_H
 
 #include <memory>
 #include "vector"
@@ -15,6 +15,7 @@ extern int yylineno;
 using namespace std;
 
 void enterLoop();
+
 void exitLoop();
 
 void exitProgramFuncs();
@@ -49,12 +50,6 @@ public:
     SymbolTable() = default;
 };
 
-class Scope {
-    vector<shared_ptr<SymbolTable>> tables;
-
-    Scope() = default;
-};
-
 class TypeNode {
 public:
     string value;
@@ -63,7 +58,7 @@ public:
 
     TypeNode();
 
-    ~TypeNode() = default;
+    virtual ~TypeNode() = default;
 };
 
 #define YYSTYPE TypeNode*
@@ -117,6 +112,7 @@ public:
 };
 
 class RetType : public TypeNode {
+public:
     explicit RetType(TypeNode *type);
 };
 
@@ -145,7 +141,7 @@ public:
     explicit Statement(Call *call);
 
     // For Return SC -> this is for a function with a void return type
-    explicit Statement(RetType *ret);
+    explicit Statement(const string& funcReturnType);
 
     // For Return Exp SC -> This is for a non-void function, exp stores the type so it is enough
     explicit Statement(Exp *exp);
@@ -180,7 +176,7 @@ public:
     vector<CaseDecl *> cases;
 
     // For CaseDecl CaseList
-    CaseList(CaseList *cList, CaseDecl *cDec);
+    CaseList(CaseDecl *cDec, CaseList *cList);
 
     // For CaseDecl
     explicit CaseList(CaseDecl *cDec);
@@ -206,7 +202,7 @@ public:
     explicit FormalsList(FormalDecl *formal);
 
     // To append a new formal to an existing formal list
-    FormalsList(FormalsList *fList, FormalDecl *formal);
+    FormalsList(FormalDecl *formal, FormalsList *fList);
 };
 
 class Formals : public TypeNode {
@@ -238,4 +234,6 @@ public:
     Program();
 };
 
-#endif //HW3_SCOPE_H
+void insertFunctionParameters(Formals *formals);
+
+#endif //HW3_SEMANTICS_H

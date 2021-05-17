@@ -2,7 +2,7 @@
 // Created by 1912m on 12/05/2021.
 //
 
-#include "Scope.h"
+#include "Semantics.h"
 
 #include <memory>
 #include <utility>
@@ -101,7 +101,9 @@ TypeNode::TypeNode(string str) : value() {
 
 }
 
-TypeNode::TypeNode() = default;
+TypeNode::TypeNode() {
+    value = "";
+}
 
 Program::Program() : TypeNode("Program") {
     shared_ptr<SymbolTable> symTab = std::make_shared<SymbolTable>();
@@ -132,7 +134,7 @@ FormalsList::FormalsList(FormalDecl *formal) {
     formals.push_back(formal);
 }
 
-FormalsList::FormalsList(FormalsList *fList, FormalDecl *formal) {
+FormalsList::FormalsList(FormalDecl *formal, FormalsList *fList) {
     formals = vector<FormalDecl *>(fList->formals);
     formals.push_back(formal);
 }
@@ -396,14 +398,14 @@ Statement::Statement(string type, Exp *exp) {
 }
 
 // For Return SC -> this is for a function with a void return type
-Statement::Statement(RetType *ret) {
+Statement::Statement(const string& funcReturnType) {
     // Need to check if the current running function is of void type
     for (int i = symTabStack.size() - 1; i >= 0; i--) {
         // Need to search in the current symtab with no particular order for the current function
         for (auto &row : symTabStack[i]->rows) {
             if (row->isFunc && row->name == currentRunningFunctionScopeId) {
                 // We found the current running function
-                if (row->type.back() == ret->value) {
+                if (row->type.back() == funcReturnType) {
                     dataTag = "void return value";
                 } else {
                     output::errorMismatch(yylineno);
@@ -457,7 +459,7 @@ Statement::Statement(TypeNode *id, Exp *exp) {
         for (auto &row : symTabStack[i]->rows) {
             if (!row->isFunc && row->name == id->value) {
                 // We found the desired variable
-                if (row->type.back() == exp->type || row->type.back() == "INT" && exp->type == "BYTE") {
+                if ((row->type.back() == exp->type) || (row->type.back() == "INT" && exp->type == "BYTE")) {
                     dataTag = row->type.back();
                 }
             }
@@ -472,7 +474,7 @@ Statement::Statement(Type *t, TypeNode *id, Exp *exp) {
         exit(0);
     }
 
-    if (t->value == exp->type || t->value == "INT" && exp->type == "BYTE") {
+    if ((t->value == exp->type) || (t->value == "INT" && exp->type == "BYTE")) {
         dataTag = t->value;
         // Creating a new variable on the stack will cause the next one to have a higher offset
         int offset = offsetStack.back()++;
@@ -511,7 +513,7 @@ Statement::Statement(Exp *exp, CaseList *cList) {
     }
 
     for (auto &i : cList->cases) {
-        if (i.value != "INT" && i.value != "BYTE") {
+        if (i->value != "INT" && i->value != "BYTE") {
             output::errorMismatch(yylineno);
             exit(0);
         }
@@ -536,7 +538,7 @@ CaseDecl::CaseDecl(TypeNode *num, Statements *states) {
     value = "case";
 }
 
-CaseList::CaseList(CaseList *cList, CaseDecl *cDec) {
+CaseList::CaseList(CaseDecl *cDec, CaseList *cList) {
     cases = vector<CaseDecl *>(cList->cases);
     cases.push_back(cDec);
     value = "case list";
@@ -549,4 +551,12 @@ CaseList::CaseList(CaseDecl *cDec) {
 
 CaseList::CaseList(Statements *states) {
 
+}
+
+void insertFunctionParameters(Formals *formals) {
+    for (int i = 0; i < formals->formals.size(); ++i) {
+        vector<string> nType = {formals->formals[i]->type};
+        shared_ptr<SymbolTableRow> nParameter = make_shared<SymbolTableRow>(formals->formals[i]->value, nType, -i - 1, false);
+        symTabStack.back()->rows.push_back(nParameter);
+    }
 }
