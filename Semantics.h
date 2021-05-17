@@ -9,6 +9,7 @@
 #include "vector"
 #include <string>
 #include <utility>
+#include <ostream>
 #include "hw3_output.hpp"
 
 extern int yylineno;
@@ -25,6 +26,8 @@ void exitProgramRuntime();
 void openNewScope();
 
 void closeCurrentScope();
+
+void printMessage(string message);
 
 bool isDeclared(const string &name);
 
@@ -59,6 +62,8 @@ public:
     TypeNode();
 
     virtual ~TypeNode() = default;
+
+    friend ostream &operator<<(ostream &os, const TypeNode &node);
 };
 
 #define YYSTYPE TypeNode*
@@ -226,7 +231,7 @@ public:
 
 class Funcs : public TypeNode {
 public:
-    Funcs() = default;
+    Funcs();
 };
 
 class Program : public TypeNode {

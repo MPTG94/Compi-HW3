@@ -4,6 +4,7 @@
 
 #include "Semantics.h"
 
+#include "iostream"
 #include <memory>
 #include <utility>
 
@@ -12,6 +13,10 @@ vector<int> offsetStack;
 vector<string> varTypes = {"VOID", "INT", "BYTE", "BOOL", "STRING"};
 
 string currentRunningFunctionScopeId;
+
+void printMessage(string message) {
+    std::cout << message << std::endl;
+}
 
 int loopCounter = 0;
 
@@ -28,6 +33,7 @@ void exitProgramFuncs() {
 }
 
 void exitProgramRuntime() {
+    printMessage("I am entering program runtime");
     shared_ptr<SymbolTable> globalScope = symTabStack.front();
     bool mainFunc = false;
     for (auto &row : globalScope->rows) {
@@ -40,12 +46,15 @@ void exitProgramRuntime() {
         exit(0);
     }
     closeCurrentScope();
+    printMessage("I am exiting program runtime");
 }
 
 void openNewScope() {
+    printMessage("creating scope");
     shared_ptr<SymbolTable> nScope = make_shared<SymbolTable>();
     symTabStack.push_back(nScope);
     offsetStack.push_back(offsetStack.back());
+    printMessage("done creating");
 }
 
 void closeCurrentScope() {
@@ -87,6 +96,9 @@ SymbolTableRow::SymbolTableRow(string name, vector<string> type, int offset, boo
 }
 
 TypeNode::TypeNode(string str) : value() {
+    printMessage("Creating type node");
+    printMessage("value is:");
+    printMessage(str);
     if (str == "void") {
         value = "VOID";
     } else if (str == "bool") {
@@ -98,14 +110,20 @@ TypeNode::TypeNode(string str) : value() {
     } else {
         value = str;
     }
-
+    printMessage("Done creating type node");
 }
 
 TypeNode::TypeNode() {
     value = "";
 }
 
+ostream &operator<<(ostream &os, const TypeNode &node) {
+    os << "value: " << node.value;
+    return os;
+}
+
 Program::Program() : TypeNode("Program") {
+    printMessage("I am entering program");
     shared_ptr<SymbolTable> symTab = std::make_shared<SymbolTable>();
     shared_ptr<SymbolTableRow> printFunc = std::make_shared<SymbolTableRow>(SymbolTableRow("print", {"STRING", "VOID"}, 0, true));
     shared_ptr<SymbolTableRow> printiFunc = std::make_shared<SymbolTableRow>(SymbolTableRow("printi", {"INT", "VOID"}, 1, true));
@@ -116,6 +134,7 @@ Program::Program() : TypeNode("Program") {
     symTabStack.push_back(symTab);
     // Placing the global symbol table at the bottom of the offset stack
     offsetStack.push_back(0);
+    printMessage("exiting program");
 }
 
 RetType::RetType(TypeNode *type) : TypeNode(type->value) {
@@ -146,6 +165,7 @@ Formals::Formals(FormalsList *formList) {
 }
 
 FuncDecl::FuncDecl(RetType *rType, TypeNode *id, Formals *funcParams) {
+    printMessage("I am in func decl");
     if (isDeclared(id->value)) {
         // Trying to redeclare a name that is already used for a different variable/fucntion
         output::errorDef(yylineno, id->value);
@@ -186,6 +206,7 @@ FuncDecl::FuncDecl(RetType *rType, TypeNode *id, Formals *funcParams) {
     shared_ptr<SymbolTableRow> nFunc = std::make_shared<SymbolTableRow>(value, type, 0, true);
     symTabStack.back()->rows.push_back(nFunc);
     currentRunningFunctionScopeId = value;
+    printMessage("exiting func decl");
 }
 
 Call::Call(TypeNode *id) {
@@ -559,4 +580,8 @@ void insertFunctionParameters(Formals *formals) {
         shared_ptr<SymbolTableRow> nParameter = make_shared<SymbolTableRow>(formals->formals[i]->value, nType, -i - 1, false);
         symTabStack.back()->rows.push_back(nParameter);
     }
+}
+
+Funcs::Funcs() {
+    printMessage("I am in funcs");
 }
