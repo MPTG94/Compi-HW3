@@ -15,6 +15,10 @@
 extern int yylineno;
 using namespace std;
 
+void enterSwitch();
+
+void exitSwitch();
+
 void enterLoop();
 
 void exitLoop();
@@ -173,7 +177,8 @@ public:
 class CaseDecl : public TypeNode {
 public:
     // For Case Num Colon Statements
-    CaseDecl(TypeNode *num, Statements *states);
+    // TODO: this signature was changed from TypeNode* to Exp* (first parameter)
+    CaseDecl(Exp *num, Statements *states);
 };
 
 class CaseList : public TypeNode {

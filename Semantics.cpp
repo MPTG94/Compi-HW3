@@ -7,7 +7,7 @@
 #include "iostream"
 #include <memory>
 
-int DEBUG = 0;
+int DEBUG = 1;
 
 vector<shared_ptr<SymbolTable>> symTabStack;
 vector<int> offsetStack;
@@ -35,13 +35,22 @@ void printSymTableStack() {
     std::cout << "Size of global symbol table stack is: " << symTabStack.size() << std::endl;
     std::cout << "id | parameter types | offset | is func" << std::endl;
     for (int i = symTabStack.size() - 1; i >= 0; --i) {
-        for (auto & row : symTabStack[i]->rows) {
+        for (auto &row : symTabStack[i]->rows) {
             printSymTabRow(row);
         }
     }
 }
 
 int loopCounter = 0;
+bool inSwitch = false;
+
+void enterSwitch() {
+    inSwitch = true;
+}
+
+void exitSwitch() {
+    inSwitch = false;
+}
 
 void enterLoop() {
     loopCounter++;
@@ -312,6 +321,9 @@ Exp::Exp(Call *call) {
 
 Exp::Exp(TypeNode *id) {
     // Need to make sure that the variable/func we want to use is declared
+    if (DEBUG) {
+        printMessage("creating exp from id");
+    }
     if (!isDeclared(id->value)) {
         output::errorUndef(yylineno, id->value);
         exit(0);
@@ -321,6 +333,9 @@ Exp::Exp(TypeNode *id) {
     for (int i = symTabStack.size() - 1; i >= 0; ++i) {
         for (auto &row : symTabStack[i]->rows) {
             if (row->name == id->value) {
+                if (DEBUG) {
+                    printMessage("found a variable with name in symtab");
+                }
                 // We found the variable/func we wanted to use in the expression
                 value = id->value;
                 // Getting the type of the variable, or the return type of the function
@@ -343,10 +358,10 @@ Exp::Exp(TypeNode *notNode, Exp *exp) {
 
 Exp::Exp(TypeNode *terminal, string taggedTypeFromParser) : TypeNode(terminal->value) {
     if (DEBUG) {
-    printMessage("in for num byte");
-    printMessage(terminal->value);
-    printMessage("tagged type:");
-    printMessage(taggedTypeFromParser);
+        printMessage("in for num byte");
+        printMessage(terminal->value);
+        printMessage("tagged type:");
+        printMessage(taggedTypeFromParser);
 
     }
     type = taggedTypeFromParser;
@@ -368,15 +383,17 @@ Exp::Exp(TypeNode *terminal, string taggedTypeFromParser) : TypeNode(terminal->v
             valueAsBooleanValue = false;
         }
     }
-
+    if (DEBUG) {
+        printMessage("now tagged as:");
+        printMessage(type);
+    }
 }
 
 Exp::Exp(Exp *ex) {
     if (DEBUG) {
-
-    printMessage("exp ex");
-    printMessage(ex->value);
-    printMessage(ex->type);
+        printMessage("exp ex");
+        printMessage(ex->value);
+        printMessage(ex->type);
     }
 //    if (ex->type != "BOOL") {
 //        output::errorMismatch(yylineno);
@@ -440,7 +457,7 @@ ExpList::ExpList(Exp *exp, ExpList *expList) {
 }
 
 Statement::Statement(TypeNode *type) {
-    if (loopCounter == 0) {
+    if (loopCounter == 0 && !inSwitch) {
         // We are not inside any loop, so a break or continue is illegal in this context
         if (type->value == "break") {
             output::errorUnexpectedBreak(yylineno);
@@ -455,11 +472,10 @@ Statement::Statement(TypeNode *type) {
 
 Statement::Statement(string type, Exp *exp) {
     if (DEBUG) {
-
-    printMessage("exp type ex");
-    printMessage(type);
-    printMessage(exp->type);
-    printMessage(exp->value);
+        printMessage("exp type ex");
+        printMessage(type);
+        printMessage(exp->type);
+        printMessage(exp->value);
     }
     if (exp->type != "BOOL") {
         output::errorMismatch(yylineno);
@@ -489,7 +505,14 @@ Statement::Statement(const string &funcReturnType) {
 }
 
 Statement::Statement(Exp *exp) {
-    if (DEBUG) printMessage("statement exp");
+    if (DEBUG) {
+        printMessage("statement exp!!!!!!");
+        printMessage(exp->type);
+        printMessage(exp->value);
+        printMessage("current func:");
+        printMessage(currentRunningFunctionScopeId);
+        //printSymTableStack();
+    }
     // Need to check if the current running function is of the specified type
     if (exp->type == "VOID") {
         // Attempt to return a void expression from a value returning function
@@ -502,9 +525,9 @@ Statement::Statement(Exp *exp) {
         for (auto &row : symTabStack[i]->rows) {
             if (row->isFunc && row->name == currentRunningFunctionScopeId) {
                 // We found the current running function
-                if (row->type.back() == exp->value) {
+                if (row->type.back() == exp->type) {
                     dataTag = exp->value;
-                } else if (row->type.back() == "INT" && exp->value == "BYTE") {
+                } else if (row->type.back() == "INT" && exp->type == "BYTE") {
                     // Allowing automatic cast from byte to int
                     dataTag = row->type.back();
                 } else {
@@ -572,6 +595,7 @@ Statement::Statement(Type *t, TypeNode *id) {
     shared_ptr<SymbolTableRow> nVar = std::make_shared<SymbolTableRow>(id->value, varType, offset, false);
     symTabStack.back()->rows.push_back(nVar);
     dataTag = t->value;
+    if (DEBUG) printSymTableStack();
 }
 
 Statement::Statement(Statement *states) {
@@ -580,6 +604,11 @@ Statement::Statement(Statement *states) {
 
 Statement::Statement(Exp *exp, CaseList *cList) {
     // Need to check that exp is a number (int,byte) and that all case decl in caselist are int or byte
+    if (DEBUG) {
+        printMessage("statement exp caselist");
+        printMessage(exp->value);
+    }
+    enterSwitch();
     if (exp->type != "INT" && exp->type != "BYTE") {
         output::errorMismatch(yylineno);
         exit(0);
@@ -603,8 +632,14 @@ Statements::Statements(Statements *states, Statement *state) {
 
 }
 
-CaseDecl::CaseDecl(TypeNode *num, Statements *states) {
-    if (num->value != "INT" && num->value != "BYTE") {
+CaseDecl::CaseDecl(Exp *num, Statements *states) {
+    if (DEBUG) {
+        printMessage(num->value);
+        printMessage(num->type);
+        printMessage("value of statements is:");
+        printMessage(states->value);
+    }
+    if (num->type != "INT" && num->type != "BYTE") {
         output::errorMismatch(yylineno);
         exit(0);
     }
