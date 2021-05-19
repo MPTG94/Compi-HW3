@@ -7,7 +7,7 @@
 #include "iostream"
 #include <memory>
 
-int DEBUG = 1;
+int DEBUG = 0;
 
 vector<shared_ptr<SymbolTable>> symTabStack;
 vector<int> offsetStack;
@@ -45,10 +45,12 @@ int loopCounter = 0;
 bool inSwitch = false;
 
 void enterSwitch() {
+    if (DEBUG) printMessage("Entering Switch block");
     inSwitch = true;
 }
 
 void exitSwitch() {
+    if (DEBUG) printMessage("Exiting Switch block");
     inSwitch = false;
 }
 
@@ -316,13 +318,15 @@ Call::Call(TypeNode *id, ExpList *list) {
 
 Exp::Exp(Call *call) {
     // Need to just take the return value of the function and use it as the return type of the expression
+    if (DEBUG) printMessage("in exp call");
     value = call->value;
 }
 
 Exp::Exp(TypeNode *id) {
     // Need to make sure that the variable/func we want to use is declared
     if (DEBUG) {
-        printMessage("creating exp from id");
+        printMessage("creating exp from id:");
+        printMessage(id->value);
     }
     if (!isDeclared(id->value)) {
         output::errorUndef(yylineno, id->value);
@@ -334,7 +338,8 @@ Exp::Exp(TypeNode *id) {
         for (auto &row : symTabStack[i]->rows) {
             if (row->name == id->value) {
                 if (DEBUG) {
-                    printMessage("found a variable with name in symtab");
+                    printMessage("found a variable with name in symtab:");
+                    printMessage(row->name);
                 }
                 // We found the variable/func we wanted to use in the expression
                 value = id->value;
@@ -391,7 +396,7 @@ Exp::Exp(TypeNode *terminal, string taggedTypeFromParser) : TypeNode(terminal->v
 
 Exp::Exp(Exp *ex) {
     if (DEBUG) {
-        printMessage("exp ex");
+        printMessage("=====exp ex=====");
         printMessage(ex->value);
         printMessage(ex->type);
     }
@@ -457,14 +462,22 @@ ExpList::ExpList(Exp *exp, ExpList *expList) {
 }
 
 Statement::Statement(TypeNode *type) {
+    if (DEBUG) {
+        printMessage("In BREAK/CONTINUE");
+        printMessage(type->value);
+    }
     if (loopCounter == 0 && !inSwitch) {
         // We are not inside any loop, so a break or continue is illegal in this context
         if (type->value == "break") {
             output::errorUnexpectedBreak(yylineno);
             exit(0);
-        } else {
+        } else if (type->value == "continue") {
             output::errorUnexpectedContinue(yylineno);
             exit(0);
+        } else {
+            if (DEBUG) {
+                printMessage("not break or continue");
+            }
         }
     }
     dataTag = "break or continue";
@@ -598,24 +611,37 @@ Statement::Statement(Type *t, TypeNode *id) {
     if (DEBUG) printSymTableStack();
 }
 
-Statement::Statement(Statement *states) {
+Statement::Statement(Statements *states) {
+    if (DEBUG) {
+        printMessage("In statement from statements");
+        printMessage(states->value);
+    }
     dataTag = "statement block";
 }
 
 Statement::Statement(Exp *exp, CaseList *cList) {
     // Need to check that exp is a number (int,byte) and that all case decl in caselist are int or byte
     if (DEBUG) {
+        if (!exp) {
+            printMessage("RECEIVED A NULLPTR");
+        }
         printMessage("statement exp caselist");
         printMessage(exp->value);
+        printMessage(exp->type);
     }
     enterSwitch();
     if (exp->type != "INT" && exp->type != "BYTE") {
+        if (DEBUG) printMessage("Mismatch in exp type");
         output::errorMismatch(yylineno);
         exit(0);
     }
 
     for (auto &i : cList->cases) {
         if (i->value != "INT" && i->value != "BYTE") {
+            if (DEBUG) {
+                printMessage("Mismatch in case type");
+                printMessage(i->value);
+            }
             output::errorMismatch(yylineno);
             exit(0);
         }
@@ -634,16 +660,19 @@ Statements::Statements(Statements *states, Statement *state) {
 
 CaseDecl::CaseDecl(Exp *num, Statements *states) {
     if (DEBUG) {
-        printMessage(num->value);
-        printMessage(num->type);
         printMessage("value of statements is:");
         printMessage(states->value);
+        printMessage("value of exp:");
+        printMessage(num->value);
+        printMessage("type of exp:");
+        printMessage(num->type);
     }
     if (num->type != "INT" && num->type != "BYTE") {
+        //if (num->value != "INT" && num->value != "BYTE") {
         output::errorMismatch(yylineno);
         exit(0);
     }
-    value = "case";
+    value = num->type;
 }
 
 CaseList::CaseList(CaseDecl *cDec, CaseList *cList) {

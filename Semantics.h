@@ -135,7 +135,7 @@ public:
     string dataTag;
 
     // For Lbrace Statements Rbrace
-    explicit Statement(Statement *states);
+    explicit Statement(Statements *states);
 
     // For Type ID SC
     Statement(Type *t, TypeNode *id);
@@ -177,8 +177,8 @@ public:
 class CaseDecl : public TypeNode {
 public:
     // For Case Num Colon Statements
-    // TODO: this signature was changed from TypeNode* to Exp* (first parameter)
     CaseDecl(Exp *num, Statements *states);
+    //CaseDecl(TypeNode *num, Statements *states);
 };
 
 class CaseList : public TypeNode {
