@@ -187,12 +187,12 @@ FormalDecl::FormalDecl(Type *t, TypeNode *id) : TypeNode(id->value), type(t->val
 }
 
 FormalsList::FormalsList(FormalDecl *formal) {
-    formals.push_back(formal);
+    formals.insert(formals.begin(), formal);
 }
 
 FormalsList::FormalsList(FormalDecl *formal, FormalsList *fList) {
     formals = vector<FormalDecl *>(fList->formals);
-    formals.push_back(formal);
+    formals.insert(formals.begin(), formal);
 }
 
 Formals::Formals() = default;
