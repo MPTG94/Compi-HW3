@@ -13,6 +13,7 @@
 #include "hw3_output.hpp"
 
 extern int yylineno;
+extern char * yytext;
 using namespace std;
 
 void enterSwitch();
@@ -34,6 +35,7 @@ void closeCurrentScope();
 void printMessage(string message);
 
 bool isDeclared(const string &name);
+bool isDeclaredVariable(const string &name);
 
 // Single row in the table of a scope
 class SymbolTableRow {
@@ -90,6 +92,9 @@ public:
 
     // for Call
     explicit Exp(Call *call);
+
+    // for exp in switch
+    Exp(Exp *e1, string tag);
 
     // for NOT Exp
     Exp(TypeNode *notNode, Exp *exp);

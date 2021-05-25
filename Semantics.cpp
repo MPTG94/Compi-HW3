@@ -7,8 +7,8 @@
 #include "iostream"
 #include <memory>
 
+extern char *yytext;
 int DEBUG = 0;
-
 vector<shared_ptr<SymbolTable>> symTabStack;
 vector<int> offsetStack;
 vector<string> varTypes = {"VOID", "INT", "BYTE", "BOOL", "STRING"};
@@ -73,7 +73,7 @@ void exitProgramRuntime() {
     shared_ptr<SymbolTable> globalScope = symTabStack.front();
     bool mainFunc = false;
     for (auto &row : globalScope->rows) {
-        if (row->isFunc && row->name == "main" && row->type.back() == "VOID") {
+        if (row->isFunc && row->name == "main" && row->type.back() == "VOID" && row->type.size() == 1) {
             mainFunc = true;
         }
     }
@@ -124,6 +124,24 @@ bool isDeclared(const string &name) {
     for (int i = symTabStack.size() - 1; i >= 0; --i) {
         for (auto &row : symTabStack[i]->rows) {
             if (row->name == name) {
+                if (DEBUG) printMessage("found id");
+                return true;
+            }
+        }
+    }
+    if (DEBUG) printMessage("can't find id");
+    return false;
+}
+
+bool isDeclaredVariable(const string &name) {
+    if (DEBUG) {
+        printMessage("In is declared for");
+        printMessage(name);
+        printSymTableStack();
+    }
+    for (int i = symTabStack.size() - 1; i >= 0; --i) {
+        for (auto &row : symTabStack[i]->rows) {
+            if (row->name == name && !row->isFunc) {
                 if (DEBUG) printMessage("found id");
                 return true;
             }
@@ -320,6 +338,7 @@ Exp::Exp(Call *call) {
     // Need to just take the return value of the function and use it as the return type of the expression
     if (DEBUG) printMessage("in exp call");
     value = call->value;
+    type = call->value;
 }
 
 Exp::Exp(TypeNode *id) {
@@ -328,13 +347,13 @@ Exp::Exp(TypeNode *id) {
         printMessage("creating exp from id:");
         printMessage(id->value);
     }
-    if (!isDeclared(id->value)) {
+    if (!isDeclaredVariable(id->value)) {
         output::errorUndef(yylineno, id->value);
         exit(0);
     }
 
     // Need to save the type of the variable function as the type of the expression
-    for (int i = symTabStack.size() - 1; i >= 0; ++i) {
+    for (int i = symTabStack.size() - 1; i >= 0; --i) {
         for (auto &row : symTabStack[i]->rows) {
             if (row->name == id->value) {
                 if (DEBUG) {
@@ -422,7 +441,7 @@ Exp::Exp(Exp *e1, TypeNode *op, Exp *e2, const string &taggedTypeFromParser) {
                 // An automatic cast to int will be performed in case one of the operands is of integer type
                 type = "INT";
             } else {
-                type = "BOOL";
+                type = "BYTE";
             }
         }
     } else if (e1->type == "BOOL" && e2->type == "BOOL") {
@@ -452,19 +471,27 @@ Exp::Exp(Exp *e1, TypeNode *op, Exp *e2, const string &taggedTypeFromParser) {
     }
 }
 
+Exp::Exp(Exp *e1, string tag) {
+    if (tag == "switch" && (e1->type != "INT" && e1->type != "BYTE")) {
+        output::errorMismatch(yylineno);
+        exit(0);
+    }
+}
+
 ExpList::ExpList(Exp *exp) {
-    list.push_back(exp);
+    list.insert(list.begin(), exp);
 }
 
 ExpList::ExpList(Exp *exp, ExpList *expList) {
     list = vector<Exp>(expList->list);
-    list.push_back(exp);
+    list.insert(list.begin(), exp);
 }
 
 Statement::Statement(TypeNode *type) {
     if (DEBUG) {
         printMessage("In BREAK/CONTINUE");
         printMessage(type->value);
+        printMessage(to_string(yylineno));
     }
     if (loopCounter == 0 && !inSwitch) {
         // We are not inside any loop, so a break or continue is illegal in this context
@@ -479,6 +506,9 @@ Statement::Statement(TypeNode *type) {
                 printMessage("not break or continue");
             }
         }
+    } else if (type->value == "continue" && inSwitch) {
+        output::errorUnexpectedContinue(yylineno);
+        exit(0);
     }
     dataTag = "break or continue";
 }
