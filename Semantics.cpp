@@ -6,6 +6,7 @@
 
 #include "iostream"
 #include <memory>
+#include <cstring>
 
 extern char *yytext;
 int DEBUG = 0;
@@ -238,7 +239,7 @@ FuncDecl::FuncDecl(RetType *rType, TypeNode *id, Formals *funcParams) {
         for (int j = i + 1; j < funcParams->formals.size(); ++j) {
             if (funcParams->formals[i]->value == funcParams->formals[j]->value) {
                 // Trying to declare a function where 2 parameters or more have the same name
-                output::errorDef(yylineno, id->value);
+                output::errorDef(yylineno, funcParams->formals[i]->value);
                 exit(0);
             }
         }
@@ -730,4 +731,8 @@ void insertFunctionParameters(Formals *formals) {
 
 Funcs::Funcs() {
     if (DEBUG) printMessage("I am in funcs");
+    if (strcmp(yytext, "") != 0) {
+        output::errorSyn(yylineno);
+        exit(0);
+    }
 }

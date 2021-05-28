@@ -1,0 +1,20 @@
+byte myfunc(int x) {
+    byte foo;
+    return foo;
+}
+
+int return6() {
+    int myset;
+    myset = myset + 6;
+    return 6;
+}
+
+void main() {
+    bool c = true;
+    if (not c) {
+        int x = 6;
+        printi(x);
+    }
+    else
+        syntax error;
+}

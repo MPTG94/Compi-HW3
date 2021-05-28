@@ -1,0 +1,30 @@
+
+int setfunc (int x) {
+    printi(x);
+    int s;
+    return s*s+s-s\s+s*s;
+}
+
+int intfunc (int x, byte y) {
+    return y * x;
+}
+
+byte bytefunc () { 
+    return 12 b;
+}
+
+int cast (byte x) {
+    return x; // <-- automatically castable so this is allowed
+}
+
+bool nand (bool x, bool y) {
+    return not (x and y);
+}
+
+bool biggerthan10 (int x) {
+    return x > 10;
+}
+
+void main() {
+    print("Hola!");
+}

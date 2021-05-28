@@ -1,0 +1,13 @@
+int func() {
+    return func() + 2; // <-- if you ever need an example of how syntactic well-formedness != working program, here is one
+}
+
+int callprev() {
+    return func();
+}
+
+void main() {
+    int x = 2;
+    int y = x;
+    int z = z; // <-- should break here!
+}

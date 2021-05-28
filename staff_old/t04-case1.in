@@ -1,0 +1,31 @@
+
+int func1 (int x) {
+	switch (x) {
+      case 1235: int y; break;
+      case 13543: return 6; break;
+      default: int z; break;
+    }
+	return 453;
+}
+
+int func2 (int x) {
+	switch (x) {
+      case 1235: int y; break;
+      case 234: int re; break;
+      case 87: int kfdvm4; break;
+      case 13543: return 6; break;
+      default: int z; break;
+    }
+	return x*x+x\x-x+x*x\x;
+}
+
+
+
+void main() {
+    int x;
+	switch (x) {
+      case 1235: int y; break;
+      case 13543: return 6; break;
+      default: int z; break;
+    }
+}
