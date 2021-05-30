@@ -1,0 +1,7 @@
+int foo(byte foo) {
+	return 1;
+}
+
+void main() {
+	return;
+}

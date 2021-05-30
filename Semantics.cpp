@@ -279,9 +279,8 @@ Call::Call(TypeNode *id) {
                     value = row->type.back();
                     return;
                 } else {
-                    //
-                    vector<string> desiredParams = {""};
-                    output::errorPrototypeMismatch(yylineno, id->value, desiredParams);
+                    row->type.pop_back();
+                    output::errorPrototypeMismatch(yylineno, id->value, row->type);
                     exit(0);
                 }
             }
