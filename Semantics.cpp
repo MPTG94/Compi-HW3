@@ -228,7 +228,7 @@ FuncDecl::FuncDecl(RetType *rType, TypeNode *id, Formals *funcParams) {
         exit(0);
     }
 
-    for (int i = 0; i < funcParams->formals.size(); ++i) {
+    for (unsigned int i = 0; i < funcParams->formals.size(); ++i) {
         if (isDeclared(funcParams->formals[i]->value) || funcParams->formals[i]->value == id->value) {
             // Trying to shadow inside the function a variable that was already declared
             // Or trying to name a function with the same name as one of the function parameters
@@ -236,7 +236,7 @@ FuncDecl::FuncDecl(RetType *rType, TypeNode *id, Formals *funcParams) {
             exit(0);
         }
 
-        for (int j = i + 1; j < funcParams->formals.size(); ++j) {
+        for (unsigned int j = i + 1; j < funcParams->formals.size(); ++j) {
             if (funcParams->formals[i]->value == funcParams->formals[j]->value) {
                 // Trying to declare a function where 2 parameters or more have the same name
                 output::errorDef(yylineno, funcParams->formals[i]->value);
@@ -304,7 +304,7 @@ Call::Call(TypeNode *id, ExpList *list) {
                 } else if (row->isFunc && row->type.size() == list->list.size() + 1) {
                     // We found the right function, has the same name, it really is a function
                     // Now we need to check that the parameter types are correct between what the function accepts, and what was sent
-                    for (int i = 0; i < list->list.size(); ++i) {
+                    for (unsigned int i = 0; i < list->list.size(); ++i) {
                         if (list->list[i].type == row->type[i]) {
                             // This parameter is of matching type so it is ok
                             continue;
@@ -722,7 +722,7 @@ CaseList::CaseList(Statements *states) {
 }
 
 void insertFunctionParameters(Formals *formals) {
-    for (int i = 0; i < formals->formals.size(); ++i) {
+    for (unsigned int i = 0; i < formals->formals.size(); ++i) {
         vector<string> nType = {formals->formals[i]->type};
         shared_ptr<SymbolTableRow> nParameter = make_shared<SymbolTableRow>(formals->formals[i]->value, nType, -i - 1, false);
         symTabStack.back()->rows.push_back(nParameter);

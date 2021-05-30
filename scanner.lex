@@ -1,7 +1,6 @@
 %{
 /* Declarations section */
 #include <stdio.h>
-#define YYSTYPE int
 #include "Semantics.h"
 #include "parser.tab.hpp"
 #include "hw3_output.hpp"
