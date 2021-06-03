@@ -43,16 +43,16 @@ void printSymTableStack() {
 }
 
 int loopCounter = 0;
-bool inSwitch = false;
+int switchCounter = 0;
 
 void enterSwitch() {
     if (DEBUG) printMessage("Entering Switch block");
-    inSwitch = true;
+    switchCounter++;
 }
 
 void exitSwitch() {
     if (DEBUG) printMessage("Exiting Switch block");
-    inSwitch = false;
+    switchCounter--;
 }
 
 void enterLoop() {
@@ -232,7 +232,7 @@ FuncDecl::FuncDecl(RetType *rType, TypeNode *id, Formals *funcParams) {
         if (isDeclared(funcParams->formals[i]->value) || funcParams->formals[i]->value == id->value) {
             // Trying to shadow inside the function a variable that was already declared
             // Or trying to name a function with the same name as one of the function parameters
-            output::errorDef(yylineno, id->value);
+            output::errorDef(yylineno, funcParams->formals[i]->value);
             exit(0);
         }
 
@@ -493,7 +493,9 @@ Statement::Statement(TypeNode *type) {
         printMessage(type->value);
         printMessage(to_string(yylineno));
     }
-    if (loopCounter == 0 && !inSwitch) {
+//    int l = loopCounter;
+//    int s = switchCounter;
+    if (loopCounter == 0 && switchCounter == 0) {
         // We are not inside any loop, so a break or continue is illegal in this context
         if (type->value == "break") {
             output::errorUnexpectedBreak(yylineno);
@@ -506,7 +508,9 @@ Statement::Statement(TypeNode *type) {
                 printMessage("not break or continue");
             }
         }
-    } else if (type->value == "continue" && inSwitch) {
+    } else if (loopCounter != 0) {
+        // We are inside a loop so break and continue are both legal
+    } else if (type->value == "continue" && switchCounter != 0) {
         output::errorUnexpectedContinue(yylineno);
         exit(0);
     }
@@ -659,7 +663,6 @@ Statement::Statement(Exp *exp, CaseList *cList) {
         printMessage(exp->value);
         printMessage(exp->type);
     }
-    enterSwitch();
     if (exp->type != "INT" && exp->type != "BYTE") {
         if (DEBUG) printMessage("Mismatch in exp type");
         output::errorMismatch(yylineno);

@@ -8,6 +8,7 @@
 
 %option yylineno
 %option noyywrap
+%option nounput
 whitespace  ([\r\n\t ])
 
 %%
