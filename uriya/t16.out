@@ -1,0 +1,12 @@
+---end scope---
+x INT 0
+---end scope---
+p BYTE 0
+---end scope---
+---end scope---
+---end scope---
+x INT -1
+---end scope---
+---end scope---
+x INT -1
+line 27: prototype mismatch, function f2 expects arguments (INT)

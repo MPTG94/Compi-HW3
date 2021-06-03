@@ -1,0 +1,11 @@
+---end scope---
+x INT 0
+---end scope---
+p BYTE 0
+---end scope---
+---end scope---
+---end scope---
+---end scope---
+---end scope---
+---end scope---
+line 24: identifier f1 is already defined

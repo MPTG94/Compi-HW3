@@ -1,0 +1,15 @@
+// checks if void is assignable
+
+bool function()
+{
+	int x = 8 + 8b * 8b;
+}
+
+void main(){
+    function();
+    print("a");
+}
+
+bool f1(){
+    int x = main;
+}

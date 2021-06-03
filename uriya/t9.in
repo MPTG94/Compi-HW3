@@ -1,0 +1,13 @@
+int function(){
+    printi(1+3b);
+}
+
+void main(){
+    function();
+    print("a");
+}
+
+bool f1(){
+    return;
+}
+

@@ -1,0 +1,10 @@
+// checks if inner scope keeps information regarding break or continue;
+void main(){
+    int x = 8b;
+    while(true){
+        {
+        break;
+        continue;
+        }
+    }
+}

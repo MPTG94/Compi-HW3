@@ -1,0 +1,11 @@
+// checks if compiler keeps track of nested whiles
+void main(){
+    int x = 8b;
+    while(true){
+        while(x == 8){
+        break;
+        continue;
+        }
+        break;
+    }
+}

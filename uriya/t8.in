@@ -1,0 +1,11 @@
+int x1(){
+    if(8 < 8){
+        return true;
+    } else{
+        return 8;
+    }
+}
+
+void main(){
+    return;
+}

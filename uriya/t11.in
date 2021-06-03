@@ -1,0 +1,30 @@
+// checks if compiler keeps track of nested whiles
+void main(){
+    int x = 8b;
+    switch (x)
+    {
+        case 8:
+        {
+            bool y = true;
+            continue;
+            break;
+        }
+        case 9:
+        {
+            break;
+        }
+		default:
+        {
+            bool y = true;
+            continue;
+            while(5 > 8){
+                continue;
+                break;
+            }
+            continue;
+            break;
+        }
+    }
+    continue;
+    break;
+}

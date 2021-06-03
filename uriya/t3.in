@@ -1,0 +1,14 @@
+// checks if void is a first class type
+int function(){
+    printi(1+3b);
+}
+
+void main(){
+    function();
+    print("");
+}
+
+bool f1(){
+    void x = main();
+}
+

@@ -1,0 +1,34 @@
+int f1() {
+    int x;
+    return x;
+}
+
+bool f2() {
+    if (true){
+        {
+            return true;
+            byte p = 8b;
+        }
+    }
+    else
+    {
+        return false;
+    }
+    return true;
+}
+
+byte f3() {
+ return 123b;
+}
+
+void f4(int f1){
+    print("f1 is a function name, shouldnt have been a viable parameter name");
+    printi(f1);
+    return;
+}
+
+void main() {
+    int x1 = f1();
+    bool x2 = f2();
+    byte x3 = f3();
+}
